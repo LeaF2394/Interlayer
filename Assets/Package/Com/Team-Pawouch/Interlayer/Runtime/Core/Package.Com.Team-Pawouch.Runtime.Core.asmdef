@@ -1,0 +1,16 @@
+{
+    "name": "Package.Com.Team-Pawouch.Runtime.Core",
+    "rootNamespace": "",
+    "references": [
+        "GUID:7dac9fb08456474b9d538260862f44f4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

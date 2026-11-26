@@ -1,0 +1,15 @@
+﻿// (c)2024-2026 Team Pawouch
+// IModLoader.cs - 2026-11-27 03:11:25
+
+#nullable enable
+using System.Collections.Generic;
+using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Api;
+
+namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon.Api;
+
+public interface IModLoader : ISingleton {
+	IReadOnlyList<ModInfo> LoadedMods { get; }
+	IReadOnlyList<ModInfo> LoadAll(string modsRoot);
+}
+
+// END FILE

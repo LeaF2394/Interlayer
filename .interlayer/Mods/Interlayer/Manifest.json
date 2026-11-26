@@ -1,0 +1,10 @@
+﻿{
+  "Id": "Interlayer",
+  "Version": "1.0.0",
+  "References": [
+    "UnityEngine",
+    "UnityEngine.CoreModule",
+    "netstandard"
+  ],
+  "Dependencies": {}
+}
