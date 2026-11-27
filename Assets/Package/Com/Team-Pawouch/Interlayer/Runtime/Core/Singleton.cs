@@ -24,10 +24,7 @@ public static class Singleton {
 
 	public static void Install() {
 		lock(_lock) {
-			if(IsInstalled) {
-				Debug.LogWarning("Runtime: Singleton has already been installed.");
-				return;
-			}
+			if(IsInstalled) return;
 
 			Directory.CreateDirectory(BaseClasspath);
 

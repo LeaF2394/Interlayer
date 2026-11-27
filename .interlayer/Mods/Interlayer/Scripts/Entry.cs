@@ -5,7 +5,7 @@
 namespace Interlayer;
 
 public static class Entry {
-	public static void Main() {
+	public static void Main(Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Bridge.Api.IUnityRuntime runtime) {
 		UnityEngine.Debug.Log("Hello World!");
 	}
 }

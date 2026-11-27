@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon.Api;
+using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Bridge.Api;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Kernel;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Interpreter;
 using UnityEngine;
@@ -82,6 +83,18 @@ internal sealed class ModLoader : IModLoader {
 		return _loaded;
 	}
 
+	public void Run(IEnumerable<ModInfo> mods, IUnityRuntime runtime) {
+		foreach(ModInfo mod in mods) {
+			Debug.Log($"{mod.Id} - {( mod.Loaded? "Loaded" : "Errors" )}");
+			string entry = $"{mod.Id}.Entry";
+
+			if(mod.Assembly == null) continue;
+
+			Singleton<CSharpCLR>.ClassInstance!.Assemble(mod.Assembly);
+			Singleton<CSharpCLR>.ClassInstance!.ExecuteStatic(entry, "Main", runtime);
+		}
+	}
+
 	private void ResolveAndLoad(List<ModInfo> mods) {
 		Dictionary<string, ModInfo> byId = new(StringComparer.OrdinalIgnoreCase);
 		foreach(ModInfo m in mods.Where(m => !byId.TryAdd(m.Id, m))) {
@@ -98,6 +111,7 @@ internal sealed class ModLoader : IModLoader {
 
 				bool    ready           = true;
 				string? blockingFailure = null;
+
 				foreach(( string depId, string minVer ) in mod.Manifest.Dependencies) {
 					if(!byId.TryGetValue(depId, out ModInfo? dep)) {
 						Fail(mod, $"Missing dependency '{depId}'");
@@ -134,7 +148,20 @@ internal sealed class ModLoader : IModLoader {
 				                                .Where(a => a != null)!;
 
 				string error = "";
-				byte[]? bin = CSharpInterpreter.InterpretProject(mod.Directory, mod.Manifest.References, images,
+
+				List<string> refs = [.. mod.Manifest.References];
+				string[] core = [
+					"Package.Com.Team-Pawouch.Runtime.Core",
+					// TODO: "Package.Com.Team-Pawouch.Runtime.Gameplay",
+				];
+
+				foreach(string refer in core) {
+					if(refs.Contains(refer, StringComparer.OrdinalIgnoreCase)) continue;
+
+					refs.Add(refer);
+				}
+
+				byte[]? bin = CSharpInterpreter.InterpretProject(mod.Directory, [.. refs], images,
 				                                                 onCompiled: (ok, msg) => {
 					                                                 error = msg;
 					                                                 if(ok) Debug.Log($"[ModLoader] Compiled '{mod.Id}': {msg}");

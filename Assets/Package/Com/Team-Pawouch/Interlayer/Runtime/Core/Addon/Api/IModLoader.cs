@@ -4,12 +4,14 @@
 #nullable enable
 using System.Collections.Generic;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Api;
+using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Bridge.Api;
 
 namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon.Api;
 
 public interface IModLoader : ISingleton {
 	IReadOnlyList<ModInfo> LoadedMods { get; }
-	IReadOnlyList<ModInfo> LoadAll(string modsRoot);
+	IReadOnlyList<ModInfo> LoadAll(string           modsRoot);
+	void                   Run(IEnumerable<ModInfo> mods, IUnityRuntime runtime);
 }
 
 // END FILE
