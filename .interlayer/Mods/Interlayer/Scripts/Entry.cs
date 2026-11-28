@@ -12,10 +12,6 @@ namespace Interlayer;
 
 public static class Entry {
 	public static void Main(IRuntime runtime) {
-		Debug.Log("Hello World!");
-
-		runtime.Tick += s => {
-			Debug.Log(s.Tick);
-		};
+		
 	}
 }

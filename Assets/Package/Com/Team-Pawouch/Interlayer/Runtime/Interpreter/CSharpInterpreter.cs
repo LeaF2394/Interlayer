@@ -10,6 +10,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using UnityEngine;
 
 namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Interpreter;
 
@@ -64,7 +65,7 @@ public static class CSharpInterpreter {
 					return null;
 				}
 
-				string location = asm.Location;
+				string location = asm.GetLoadedAssemblyPath();
 				if(!string.IsNullOrEmpty(location) && File.Exists(location) && seen.Add(location)) refs.Add(MetadataReference.CreateFromFile(location));
 			}
 
@@ -77,7 +78,7 @@ public static class CSharpInterpreter {
 			AddCoreReference(typeof(Uri),        refs, seen);
 			AddCoreReference(typeof(Enumerable), refs, seen);
 
-			SyntaxTree[]      syntaxTrees = codes.Select(c => CSharpSyntaxTree.ParseText(c)).ToArray();
+			SyntaxTree[]      syntaxTrees = [.. codes.Select(c => CSharpSyntaxTree.ParseText(c))];
 			CSharpCompilation compilation = CSharpCompilation.Create(Guid.NewGuid().ToString("N"), syntaxTrees, refs, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
 
 			using MemoryStream pe     = new();
@@ -98,13 +99,13 @@ public static class CSharpInterpreter {
 		}
 
 		void AddCoreReference(Type type, List<MetadataReference> localRefs, HashSet<string> localSeen) {
-			string location = type.Assembly.Location;
+			string location = type.Assembly.GetLoadedAssemblyPath();
 			if(!string.IsNullOrEmpty(location) && File.Exists(location) && localSeen.Add(location)) localRefs.Add(MetadataReference.CreateFromFile(location));
 		}
 	}
 
 	private static Assembly? Resolve(string name) {
-		foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+		foreach(Assembly assembly in UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()) {
 			string package = assembly.GetName().Name;
 			if(string.Equals(package, name, StringComparison.OrdinalIgnoreCase)) return assembly;
 		}

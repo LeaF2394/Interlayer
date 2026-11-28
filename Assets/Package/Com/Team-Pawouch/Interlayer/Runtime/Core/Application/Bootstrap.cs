@@ -45,24 +45,19 @@ internal static class Bootstrap {
 	}
 
 	private static void RegisterDispose<T>() where T : class, ISingleton {
-#if UNITY_EDITOR
-		EditorApplication.playModeStateChanged -= Singleton<T>.EditorDispose;
-		EditorApplication.playModeStateChanged += Singleton<T>.EditorDispose;
-#endif
-
 		Application.quitting -= Singleton<T>.Dispose;
 		Application.quitting += Singleton<T>.Dispose;
 	}
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 	private static void Boot() {
-		IReadOnlyList<ModInfo> infos = Singleton<IModLoader>.ClassInstance!.LoadAll(Singleton<AppPath>.ClassInstance!.ModsPath);
-		Singleton<IModLoader>.ClassInstance!.Run(infos, Singleton<IRuntime>.ClassInstance!);
+		Singleton<IModLoader>.ClassInstance!.LoadAll(Singleton<AppPath>.ClassInstance!.ModsPath);
 	}
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
 	private static void Run() {
 		Singleton<IRuntime>.ClassInstance!.Install();
+		Singleton<IModLoader>.ClassInstance!.Run(Singleton<IModLoader>.ClassInstance.LoadedMods, Singleton<IRuntime>.ClassInstance!);
 	}
 }
 

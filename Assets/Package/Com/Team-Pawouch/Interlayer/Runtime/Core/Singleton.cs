@@ -9,7 +9,7 @@ using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Api;
 using UnityEngine;
 
 #if UNITY_EDITOR
-using static UnityEditor.EnterPlayModeOptions;
+using UnityEditor;
 #endif
 
 namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core;
@@ -21,7 +21,7 @@ public static class Singleton {
 		}
 	}
 
-	public static string BaseClasspath { get; } = Path.GetFullPath(Path.Combine(Application.persistentDataPath, "bin", "runtime", "classpath"));
+	public static string BaseClasspath { get; } = Path.GetFullPath(Path.Combine(Application.temporaryCachePath, "bin", "Runtime", "Classpath"));
 
 	private static readonly object _lock = new();
 
@@ -32,6 +32,17 @@ public static class Singleton {
 			Directory.CreateDirectory(BaseClasspath);
 
 			Debug.LogFormat("Runtime: Base Classpath at: {0}", BaseClasspath);
+		}
+	}
+
+	public static void Uninstall() {
+		lock(_lock) {
+			if(!IsInstalled) {
+				Debug.LogWarning("Runtime: Singleton has not been installed.");
+				return;
+			}
+
+			Directory.Delete(BaseClasspath, true);
 		}
 	}
 }
@@ -49,13 +60,9 @@ public static class Singleton<T> where T : class, ISingleton {
 	public static event Action<T>? OnClassConstruct, OnClassChanged;
 	public static event Action?    OnClassDeconstruct;
 
-	static Singleton() {
-		ClassInstance = null;
-	}
-
 #if UNITY_EDITOR
-	internal static void EditorDispose(UnityEditor.PlayModeStateChange obj) {
-		if(obj is not UnityEditor.PlayModeStateChange.ExitingPlayMode) return;
+	internal static void EditorDispose(PlayModeStateChange obj) {
+		if(obj is not PlayModeStateChange.ExitingPlayMode) return;
 		Dispose();
 	}
 #endif
@@ -138,7 +145,6 @@ public static class Singleton<T> where T : class, ISingleton {
 	}
 
 	public static void Deconstruct() {
-		T? old;
 		lock(_lock) {
 			if(!Singleton.IsInstalled) {
 				Debug.LogWarning("Runtime: Singleton has not been installed.");
@@ -150,12 +156,9 @@ public static class Singleton<T> where T : class, ISingleton {
 				return;
 			}
 
-			old           = ClassInstance;
 			ClassInstance = null;
+			OnClassDeconstruct?.Invoke();
 		}
-
-		Class<T>.Deconstruct(old.GUID);
-		OnClassDeconstruct?.Invoke();
 	}
 
 	public static string? Read(string file) => Read(file, Encoding.UTF8);

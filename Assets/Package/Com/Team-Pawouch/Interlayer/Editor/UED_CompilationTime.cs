@@ -21,7 +21,7 @@ internal static class UED_CompilationTime {
 	private static readonly Dictionary<object, Compilation> _compilations = new();
 	private const           string                          PREFSKey_CT   = "k.ctime";
 
-	private static string EnableFilePath => Path.Combine(Application.streamingAssetsPath, "compilation_time.enable");
+	public static  string EnableFilePath => Path.Combine(Application.streamingAssetsPath, "compilation_time.enable");
 	private static string NumberColorTag => ColorUtility.ToHtmlStringRGB(Color.paleGoldenRod);
 
 	[MenuItem("Team Pawouch/Editor/Compilation Pipeline/Show Compilation Time")]
