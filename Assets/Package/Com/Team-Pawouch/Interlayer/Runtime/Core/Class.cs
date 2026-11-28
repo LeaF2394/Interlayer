@@ -18,8 +18,6 @@ public static class Class {
 		}
 	}
 
-	public static void Uninstall() { }
-
 	internal static int Increment() {
 		lock(_lock) return _increment++;
 	}

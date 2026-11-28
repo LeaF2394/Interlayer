@@ -83,7 +83,7 @@ internal sealed class ModLoader : IModLoader {
 		return _loaded;
 	}
 
-	public void Run(IEnumerable<ModInfo> mods, IUnityRuntime runtime) {
+	public void Run(IEnumerable<ModInfo> mods, IRuntime runtime) {
 		foreach(ModInfo mod in mods) {
 			Debug.Log($"{mod.Id} - {( mod.Loaded? "Loaded" : "Errors" )}");
 			string entry = $"{mod.Id}.Entry";

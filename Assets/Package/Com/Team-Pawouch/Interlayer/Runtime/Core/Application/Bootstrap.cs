@@ -5,11 +5,13 @@
 using System.Collections.Generic;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon.Api;
-using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Bridge;
+using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Api;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Bridge.Api;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Kernel;
 using UnityEngine;
+
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 
 namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core.App;
@@ -17,31 +19,50 @@ namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core.App;
 internal static class Bootstrap {
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
 	private static void Complete() {
-		// 1. Complete Game Dir
+		Class.Install();
+		Singleton.Install();
 
-		// 2. Check Update and Download new updates -> Reload Game
+		RegisterDispose<AppPath>();
+
+		Class<AppPath>.SetConstructor(AppPath.GetConstructor());
+
+		Singleton<AppPath>.Construct();
 	}
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	private static void Subsystem() {
-		Class.Install();
-		Singleton.Install();
+		RegisterDispose<CSharpCLR>();
+		RegisterDispose<IRuntime>();
+		RegisterDispose<IModLoader>();
 
-		Class<AppPath>.SetConstructor(AppPath.GetConstructor());
 		Class<CSharpCLR>.SetConstructor(CSharpCLR.GetConstructor());
-		Class<IUnityRuntime>.SetConstructor(UnityRuntime.GetConstructor());
+		Class<IRuntime>.SetConstructor(Bridge.Runtime.GetConstructor());
 		Class<IModLoader>.SetConstructor(ModLoader.GetConstructor());
 
-		Singleton<AppPath>.Construct();
 		Singleton<CSharpCLR>.Construct();
-		Singleton<IUnityRuntime>.Construct();
+		Singleton<IRuntime>.Construct();
 		Singleton<IModLoader>.Construct();
+	}
+
+	private static void RegisterDispose<T>() where T : class, ISingleton {
+#if UNITY_EDITOR
+		EditorApplication.playModeStateChanged -= Singleton<T>.EditorDispose;
+		EditorApplication.playModeStateChanged += Singleton<T>.EditorDispose;
+#endif
+
+		Application.quitting -= Singleton<T>.Dispose;
+		Application.quitting += Singleton<T>.Dispose;
 	}
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 	private static void Boot() {
 		IReadOnlyList<ModInfo> infos = Singleton<IModLoader>.ClassInstance!.LoadAll(Singleton<AppPath>.ClassInstance!.ModsPath);
-		Singleton<IModLoader>.ClassInstance!.Run(infos, Singleton<IUnityRuntime>.ClassInstance!);
+		Singleton<IModLoader>.ClassInstance!.Run(infos, Singleton<IRuntime>.ClassInstance!);
+	}
+
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+	private static void Run() {
+		Singleton<IRuntime>.ClassInstance!.Install();
 	}
 }
 

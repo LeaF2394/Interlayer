@@ -7,7 +7,10 @@ using System.IO;
 using System.Text;
 using Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Api;
 using UnityEngine;
+
+#if UNITY_EDITOR
 using static UnityEditor.EnterPlayModeOptions;
+#endif
 
 namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core;
 
@@ -31,17 +34,6 @@ public static class Singleton {
 			Debug.LogFormat("Runtime: Base Classpath at: {0}", BaseClasspath);
 		}
 	}
-
-	public static void Uninstall() {
-		if(!IsInstalled) {
-			Debug.LogWarning("Runtime: Singleton has not been installed.");
-			return;
-		}
-
-		lock(_lock) {
-			Directory.Delete(BaseClasspath, true);
-		}
-	}
 }
 
 public static class Singleton<T> where T : class, ISingleton {
@@ -59,46 +51,16 @@ public static class Singleton<T> where T : class, ISingleton {
 
 	static Singleton() {
 		ClassInstance = null;
-
-		Application.quitting -= Dispose;
-		Application.quitting += Dispose;
-
-#if UNITY_EDITOR
-		UnityEditor.EditorApplication.playModeStateChanged -= EditorDispose;
-		UnityEditor.EditorApplication.playModeStateChanged += EditorDispose;
-#endif
 	}
 
 #if UNITY_EDITOR
-	private static void EditorDispose(UnityEditor.PlayModeStateChange obj) {
+	internal static void EditorDispose(UnityEditor.PlayModeStateChange obj) {
 		if(obj is not UnityEditor.PlayModeStateChange.ExitingPlayMode) return;
 		Dispose();
-
-		if(UnityEditor.EditorSettings.enterPlayModeOptions is not DisableDomainReload)
-			UnityEditor.EditorApplication.playModeStateChanged -= EditorDispose;
 	}
 #endif
 
-	private static void Dispose() {
-		Application.quitting -= Dispose;
-
-		T? old;
-		lock(_lock) {
-			if(!Singleton.IsInstalled) {
-				Debug.LogWarning("Runtime: Singleton has not been installed.");
-				return;
-			}
-
-			old           = ClassInstance;
-			ClassInstance = null;
-
-			OnClassConstruct   = null;
-			OnClassChanged     = null;
-			OnClassDeconstruct = null;
-		}
-
-		old?.Deconstruct();
-	}
+	internal static void Dispose() => Deconstruct();
 
 	public static void Construct(params object[] args) {
 		T instance = Class<T>.Construct(typeof(T).FullName!);
@@ -192,7 +154,7 @@ public static class Singleton<T> where T : class, ISingleton {
 			ClassInstance = null;
 		}
 
-		old.Deconstruct();
+		Class<T>.Deconstruct(old.GUID);
 		OnClassDeconstruct?.Invoke();
 	}
 
