@@ -1,5 +1,5 @@
 ﻿{
-  "Id": "Interlayer",
+  "Id": "Interlayer-ExampleMod",
   "Version": "1.0.0",
   "References": [
     "UnityEngine",
