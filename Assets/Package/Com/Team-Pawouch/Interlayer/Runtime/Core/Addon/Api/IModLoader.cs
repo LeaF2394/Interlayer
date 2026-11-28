@@ -11,7 +11,7 @@ namespace Package.Com.Team_Pawouch.Interlayer.Runtime.Core.Addon.Api;
 public interface IModLoader : ISingleton {
 	IReadOnlyList<ModInfo> LoadedMods { get; }
 	IReadOnlyList<ModInfo> LoadAll(string           modsRoot);
-	void                   Run(IEnumerable<ModInfo> mods, IUnityRuntime runtime);
+	void                   Run(IEnumerable<ModInfo> mods, IRuntime runtime);
 }
 
 // END FILE

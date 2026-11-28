@@ -19,6 +19,10 @@ public sealed class AppPath : ISingleton {
 	public string GamePath { get; }
 	public string ModsPath { get; }
 
+	public string DBPath       { get; }
+	public string SavesPath    { get; }
+	public string SettingsFile { get; }
+
 	public static Func<int, string, AppPath> GetConstructor() => (id, name) => new AppPath(id, name);
 
 	private AppPath(int id, string name) {
@@ -29,12 +33,18 @@ public sealed class AppPath : ISingleton {
 		BasePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..")).Replace('\\', '/');
 		GamePath = Path.Combine(BasePath, $".{Application.productName.ToLower()}").Replace('\\', '/');
 		ModsPath = Path.Combine(GamePath, "Mods").Replace('\\', '/');
+
+		DBPath       = Application.persistentDataPath.Replace('\\', '/');
+		SavesPath    = Path.Combine(DBPath, "Saves");
+		SettingsFile = Path.Combine(DBPath, "Settings.json");
 	}
 
 	public void Construct(object[] args) {
 		Directory.CreateDirectory(BasePath);
 		Directory.CreateDirectory(GamePath);
 		Directory.CreateDirectory(ModsPath);
+		Directory.CreateDirectory(DBPath);
+		Directory.CreateDirectory(SavesPath);
 	}
 
 	public void Deconstruct() { }
